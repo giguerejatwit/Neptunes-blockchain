@@ -1,5 +1,5 @@
 # Neptunes-Blockchain
-<h3 align="left">this is a basic Blockchain used to handle transactions over a network</h3>
+<h3 align="left">this is a basic Blockchain used to handle transactions over a local node</h3>
 
 
 <p align="left">
