@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.Map.Entry;
 
 public class Transaction {
     public String id;
@@ -13,7 +14,7 @@ public class Transaction {
      * 
      * @param senderWallet     The sender wallet instance
      * @param recipientAddress The address of the recipient
-     * @param amount           The amount to be transferred
+     * @param amoudnt          The amount to be transferred
      */
     public Transaction(Wallet senderWallet, String recipientAddress, double amount) {
         this.id = UUID.randomUUID().toString();
@@ -40,6 +41,7 @@ public class Transaction {
     /**
      * Creates transaction inputs
      * 
+     * 
      * @param senderWallet The sender wallet instance
      * @return A mapping of transaction id and a pair of a recipient and amount
      *         transferred
@@ -52,9 +54,25 @@ public class Transaction {
      *         transaction inputs from the sender wallet UTXOs
      */
     private Map<String, Pair<String, Double>> createInputs(Wallet senderWallet) {
-        // Write your code here
 
-        return null;
+        Map<String, Pair<String, Double>> mp = new HashMap<>();
+        try {
+            double sum = 0.00;
+            // traverse UTXOs
+            for (Map.Entry<String, Pair<String, Double>> entry : senderWallet.UTXOs.entrySet()) {
+                // add UTXO until we have enough for the transaction
+                if (sum < this.amount) {
+                    // put the entry
+                    mp.put(entry.getKey(), new Pair<String, Double>(entry.getValue().key, entry.getValue().value));
+                    sum += entry.getValue().value;
+
+                }
+            }
+
+        } catch (NoSuchElementException e) {
+            System.out.print(e);
+        }
+        return mp;
     }
 
     /**
@@ -73,9 +91,19 @@ public class Transaction {
      *         sender
      */
     private Map<String, Double> createOutputs(Wallet senderWallet, String recipientAddress, double amount) {
-        // Write your code here
+        // Write your code her
+        double inputAmount = getInputsAmount(this.inputs);
 
-        return null;
+        Map<String, Double> mp = new HashMap<String, Double>();
+        if (inputAmount > amount) {
+            inputAmount -= amount;
+
+            mp.put(recipientAddress, amount);
+        }
+
+        mp.put(this.senderAddress, inputAmount);
+
+        return mp;
     }
 
     /**
@@ -89,8 +117,16 @@ public class Transaction {
      * 
      */
     private double getInputsAmount(Map<String, Pair<String, Double>> inputs) {
-        // Write your code here
 
-        return 0;
+        Double total = 0.00;
+        Iterator<Entry<String, Pair<String, Double>>> it = inputs.entrySet().iterator();
+        while (it.hasNext() && total < this.amount) {
+            Pair<String, Double> pair = it.next().getValue();
+
+            if (total < this.amount) {
+                total += pair.value;
+            }
+        }
+        return total;
     }
 }

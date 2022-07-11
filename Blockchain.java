@@ -1,30 +1,32 @@
-import java.util.*;
+/* !!!DO NOT MODIFY CODE IN THIS FILE!!! */
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Blockchain {
-	// Add blockchain properties here
-	private LinkedList<Block> chain = new LinkedList<>();
-	static int difficulty = 2;
+	public List<Block> chain;
+	public int difficulty;
 
 	/**
 	 * Constructor
 	 */
 	public Blockchain() {
-		// Write your code here
-		Block genesis = Block.genesis();
-
-		this.chain.add(genesis);
+		this.chain = new ArrayList<>();
+		this.chain.add(Block.genesis());
+		this.difficulty = 4;
 	}
 
 	/**
 	 * Adds a new block to the blockchain
 	 * 
-	 * @param transaction1 Block data
+	 * @param data Block data
 	 */
-	public void addBlock(Transaction transaction) {
-
-		Block block = Block.mineBlock(chain.getLast(), transaction, difficulty);
-
-		this.chain.add(block);
+	public void addBlock(Transaction data) {
+		if (data == null)
+			return;
+		Block lastBlock = this.chain.get(this.chain.size() - 1);
+		this.chain.add(Block.mineBlock(lastBlock, data, this.difficulty));
 	}
 
 	/**
@@ -61,25 +63,24 @@ public class Blockchain {
 	 * @return True if valid, false otherwise
 	 */
 	public static boolean isValidChain(Blockchain blockchain) {
-		// Write your code here
+		List<Block> chain = blockchain.chain;
+		String hashTarget = String.join("", Collections.nCopies(blockchain.difficulty, "0"));
 
-		if (blockchain.chain.isEmpty())
-			return false;
+		for (int i = 1; i < chain.size(); i++) {
+			Block current = chain.get(i);
+			Block prev = chain.get(i - 1);
 
-		int i = 0;
-		int j = 1;
-
-		while (j < blockchain.chain.size()) {
-			Block anchor = blockchain.chain.get(i);
-			Block runner = blockchain.chain.get(j);
-
-			if (!(runner.prevHash == anchor.hash)) {
+			if (!current.hash.equals(current.calculateHash())) {
 				return false;
 			}
 
-			i++;
-			j++;
+			if (!prev.hash.equals(current.prevHash)) {
+				return false;
+			}
 
+			if (!current.hash.substring(0, blockchain.difficulty).equals(hashTarget)) {
+				return false;
+			}
 		}
 
 		return true;
